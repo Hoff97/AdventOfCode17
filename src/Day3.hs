@@ -1,5 +1,7 @@
 module Day3 where
 
+import           Data.Array
+
 sumT :: Num a => (a,a) -> a
 sumT (x,y) = abs x + abs y
 
@@ -25,3 +27,24 @@ next (d,(x,y))
 
 start :: (Dir,(Int,Int))
 start = (D,(0,0))
+
+walk :: (a -> (Dir,(Int,Int)) -> a) -> a -> (Dir,(Int,Int)) -> [(a,Dir,(Int,Int))]
+walk f a g = (n,d,p):walk f n (next g)
+  where
+    n = f a g
+    (d,p) = g
+
+dim = 10
+start2 = listArray ((-dim,-dim),(dim,dim)) [0 | a <- [-dim..dim], b <- [-dim..dim]]
+
+neighbours (i,j) = [(i+a,j+b) | a <- [-1,0,1], b <- [-1,0,1], abs a + abs b /= 0]
+
+computeNext arr (_,(i,j))
+  | i==0 && j==0 = arr//[((i,j),1)]
+  | otherwise = arr//[((i,j),sum $ map valAt (neighbours (i,j)))]
+    where
+      valAt (a,b) = arr!(a,b)
+
+solution2 x = head . filter (>x) . map (\(arr,_,pos) ->  arr!pos) . walk computeNext start2 $ start
+
+t (_,_,a) = a
